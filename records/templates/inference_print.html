@@ -1,0 +1,130 @@
+{% load mathfilters %}
+{% block content %}
+<head>
+	<script>
+		window.onload = function() {
+			window.print();
+		};
+	</script>
+	<style>
+		@media print {
+		   body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+	        }
+
+	        header {
+	            background-color: #810000;
+	            color: white;
+	            padding: 10px;
+	            text-align: center;
+	        }
+
+	        footer {
+	            background-color: #333;
+	            color: white;
+	            padding: 10px;
+	            text-align: center;
+	            position: fixed;
+	            bottom: 0;
+	            width: 100%;
+	        }
+
+
+		}
+
+
+
+	        header {
+	            background-color: #810000;
+	            color: white;
+	            padding: 10px;
+	            text-align: center;
+	        }
+
+	        footer {
+	            background-color: #333;
+	            color: white;
+	            padding: 10px;
+	            text-align: center;
+	            position: fixed;
+	            bottom: 0;
+	            width: 100%;
+	        }
+	</style>
+</head>
+<body>
+	<header>
+        <h1>Pap Smear Detection</h1>
+    </header>
+<center><h1>HASIL PREDIKSI</h1></center>
+
+{% if data_to_print %}
+<table>
+	<tr>
+		<td>
+			Name Pasien
+		</td>
+		<td>
+			: {{ data_to_print.patient_data.patientName }} 
+		</td>
+	</tr>
+	<tr>
+		<td>
+			No Pasien
+		</td>
+		<td>
+			: {{ data_to_print.patient_data.patientID }}
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Tanggal Lahir
+		</td>
+		<td>
+			: {{ data_to_print.patient_data.patientBirthDate }}
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Jenis Kelamin
+		</td>
+		<td>
+			: {{ data_to_print.patient_data.get_patientGender_display }}
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Tanggal Gambar Diambil 
+		</td>
+		<td>
+			: {{ data_to_print.imageDate|date:"Y-m-d" }}
+		</td>
+	</tr>
+</table>
+
+<div style="display:flex; flex-direction: column; align-items: center;">
+	<h4>Gambar Asli</h4>
+	<img src="/media/static/{{ data_to_print.annotated_image }}" height="224" alt="raw_image">
+</div>
+
+<div style="display:flex; flex-direction: column; align-items: center;">
+	<h4>Hasil Prediksi</h4>
+	<div style="display:grid; grid: 150px / auto auto auto;">
+		{% for item in prediction_results %}
+			<div style="display:flex; flex-direction: column; align-items: center; text-align: center">
+				<img src="/media/static/{{ item.image }}" width="224" height="224">
+				<p>Model mendiagnosis bahwa gambar sitologi berikut terindikasi {{ item.predictionResult }}</p>
+			</div>
+		{% endfor %}
+	</div>
+</div>
+</br>
+<footer>
+		<p>&copy; 2024 BDSRC and AIRDC | Binus University. All Rights Reserved.</p>
+</footer>
+    </body>
+			{% endif %}
+{% endblock %}

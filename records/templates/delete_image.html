@@ -1,0 +1,59 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+{% block branding %}
+    <h1 id="site-name"><a href="{% url 'admin:index' %}">Pap Smear Detection</a></h1>
+{% endblock %}
+{% block content %}
+<head>
+	
+	
+</head>
+<body>
+	Silahkan masukkan password anda jika ingin hapus data 
+
+<table>
+	{% for file in file_to_delete %}
+	<tr>
+		<td>
+			Name Pasien
+		</td>
+		<td>
+			: {{ file.patient_data.patientName }} 
+		</td>
+	</tr>
+	<tr>
+		<td>
+			No Pasien
+		</td>
+		<td>
+			: {{ file.patient_data.patientID }}
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Gambar Asli
+		</td>
+		<td>
+			<img src="/media/{{ file.image }}" width="100"></a>
+		</td>
+	</tr>
+	<tr>
+
+		<form method="post" action="">
+		{% csrf_token %}
+			<td>
+				<input type="password" name="password">
+				<input type="hidden" name="idPrint" value="{{ file.id }}">
+			</td>
+			<td>
+				<button name="action" value="verify" class="button is-danger">Hapus</button>
+			</td>
+		</form>
+	</tr>
+	{% endfor %}
+</table>
+
+
+
+{% endblock %}

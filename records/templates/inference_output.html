@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% load mathfilters %}
+
+{% block branding %}
+    <h1 id="site-name"><a href="{% url 'admin:index' %}">Pap Smear Detection</a></h1>
+{% endblock %}
+
+<html>
+<head>
+    <title>Upload Results</title>
+    
+</head>
+{% block content %}
+
+<body>
+    <h1>Results</h1>
+
+    <table width="100%">
+        <thead>
+            <tr>
+                <th>Gambar Asli</th>
+                <th>Hasil Prediksi</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for data in predicted_images %}
+            <tr>
+
+                <td>
+                    <img src="/media/static/{{ data.image }}" width="224" height="224">
+                </td>
+                <td>
+                    <p>Model mendiagnosis bahwa gambar yang diupload terindikasi {{ data.predictionResult }}</p>
+                </td>
+                <td>
+                    <a href="{% url 'delete_prediction_view' data.id %}" class="button" name="action" value="delete" style="background-color: #ba2121; color: white;">Hapus</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+{% endblock %}
+
+
+
+</body>
+
+</html>
