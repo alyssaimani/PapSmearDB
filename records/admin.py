@@ -18,6 +18,7 @@ import os
 import torch
 
 # Register your models here.
+admin.site.site_header = 'Pap Smear Detection'
 class PatientUpload(admin.StackedInline):
     model = UploadedFile
 
