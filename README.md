@@ -1,4 +1,4 @@
-## Dependencies Setup
+## Setup Rquirements
 1. install python 3.10 and pip
    
    ```sudo dnf install python-3 python3-pip```
