@@ -18,7 +18,11 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
-MEDIA_URL = '/media/'
+# local
+# MEDIA_URL = '/media/'
+# production
+MEDIA_URL = '/papsmeardb/media/'
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
@@ -134,10 +138,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+# local
+# STATIC_URL = 'static/'
+# production
+STATIC_URL = '/papsmeardb/static/'
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+FORCE_SCRIPT_NAME = '/papsmeardb'
