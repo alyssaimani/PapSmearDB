@@ -1,17 +1,23 @@
 ## Requirements
 1. install python 3.10 and pip
+   
    ```sudo dnf install python-3 python3-pip```
    
 2. Create virtual environment
+
    ```sudo mkdir -p /opt/venvs/papsmeardb```
+
    ```python3 -m venv /opt/venvs/papsmeardb```
    
-4. Activate virtual environment
+3. Activate virtual environment
+
    ```source /opt/venvs/papsmeardb/bin/activate```
    
-6. Install dependencies:
-  ```pip install -r requirements.txt```
-  ```pip install msqlclient```
+4. Install dependencies:
+
+   ```pip install -r requirements.txt```
+
+   ```pip install msqlclient```
 
 ## Setup Instructions
 
