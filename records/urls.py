@@ -8,7 +8,7 @@ from .views import print_item_view, delete_uploaded_view, show_prediction_view, 
 
 urlpatterns = [
     
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('print/<int:item_id>', print_item_view, name='print_item_view'), 
     path('delete_uploaded/<int:item_id>', delete_uploaded_view, name='delete_uploaded_view'), 
     path('item/<int:item_id>/', show_prediction_view, name='show_prediction_view'),

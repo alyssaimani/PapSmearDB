@@ -19,11 +19,12 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls import reverse_lazy
     
 urlpatterns = [
     path("records/", include("records.urls")),
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(url='/admin/', permanent=True))
+    path('', RedirectView.as_view(url=reverse_lazy('admin:index'), permanent=True))
 ]
 
 if settings.DEBUG:
