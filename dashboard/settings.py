@@ -41,6 +41,7 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
+CSRF_TRUSTED_ORIGINS = ['https://bdsrc.binus.ac.id']
 
 # Application definition
 
