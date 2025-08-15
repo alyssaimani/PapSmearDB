@@ -6,6 +6,7 @@ class RecordData(models.Model):
 	recordNum = models.CharField('Nomor Rekam Medis', max_length = 225, default='UNKNOWN')
 	institutionName = models.CharField('Institusi', max_length = 225)
 	recordDate = models.DateField('Tanggal pengambilan', auto_now_add=False, auto_now=False)
+	project = models.FileField(upload_to='uploads/')
 	recordID = models.CharField('Record ID', max_length = 16, unique=True, default=None)
 
 	def __str__(self):

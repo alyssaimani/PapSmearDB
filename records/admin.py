@@ -53,9 +53,12 @@ class RecordDataForm(forms.ModelForm):
         label='Tanggal Pengambilan Data',
     )
 
+    project = forms.FileField(
+        label='Project Qupath'
+    )
 class RecordDetail(admin.ModelAdmin):
    form = RecordDataForm
-   list_display = ('recordID', 'recordNum', 'recordDate', 'institutionName') 
+   list_display = ('recordID', 'recordNum', 'recordDate', 'institutionName', 'project') 
 
 admin.site.register(RecordData, RecordDetail)
 
@@ -221,7 +224,7 @@ class UploadFileForm(forms.Form):
 
     class Meta:
         model = UploadedFile
-        fields = ['image', 'annotation', 'recordNum', 'recordDate']
+        fields = ['image', 'annotation', 'recordNum', 'recordDate', 'project']
 
 class UploadedFile_list(admin.ModelAdmin):
     list_display = ('get_record_num', 'detail')

@@ -51,7 +51,7 @@ class UploadFileForm(forms.ModelForm):
 
 
 
-class PatientData(forms.ModelForm):
+class RecordData(forms.ModelForm):
     class Meta:
         model = RecordData
 
@@ -60,4 +60,5 @@ class PatientData(forms.ModelForm):
             "recordNum",
             "institutionName",
             "recordDate",
+            "project",
         ]
