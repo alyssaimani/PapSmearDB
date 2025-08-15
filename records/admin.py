@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django import forms
 from django.utils.html import format_html
-from .models import UploadedFile, PatientData, CroppedImage
+from .models import UploadedFile, RecordData, CroppedImage
 from datetime import datetime
 from django.core.validators import RegexValidator
 from django.views.generic.detail import  DetailView
@@ -19,56 +19,56 @@ import torch
 
 # Register your models here.
 admin.site.site_header = 'Pap Smear Detection'
-class PatientUpload(admin.StackedInline):
+class RecordUpload(admin.StackedInline):
     model = UploadedFile
 
-class PatientDataForm(forms.ModelForm):
+class RecordDataForm(forms.ModelForm):
     current_date = datetime.now().date()
 
     class Meta:
-        model = PatientData
+        model = RecordData
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['patientID'].disabled = True
+        self.fields['recordID'].disabled = True
 
-        # If the instance is not provided (i.e., when creating a new patient), generate no_pasien
+        # If the instance is not provided (i.e., when creating a new record), generate no_record
         if not self.instance.pk:
-            latest_patient = PatientData.objects.order_by('-patientID').first()
-            if latest_patient:
-                numeric_part = int(latest_patient.patientID[3:])
+            latest_record = RecordData.objects.order_by('-recordID').first()
+            if latest_record:
+                numeric_part = int(latest_record.recordID[3:])
                 next_numeric_part = numeric_part + 1
-                self.initial['patientID'] = f'PAS{next_numeric_part:03}'
+                self.initial['recordID'] = f'PAS{next_numeric_part:03}'
             else:
-                self.initial['patientID'] = 'PAS001'
+                self.initial['recordID'] = 'PAS001'
 
-    patientName = forms.CharField(
-        validators=[RegexValidator(regex=r'^[a-zA-Z\s]*$', message='Enter only alphabetic characters.')],
-        label='Nama Pasien'
+    recordNum = forms.CharField(
+        validators=[RegexValidator(regex=r'^[a-zA-Z0-9\s]*$', message='Enter only alphanumeric characters.')],
+        label='Nomor Rekam Medis'
     )
 
-    patientBirthDate = forms.DateField(
+    recordDate = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date', 'max': str(current_date)}),
-        label='Tanggal Lahir Pasien',
+        label='Tanggal Pengambilan Data',
     )
 
-class PatientDetail(admin.ModelAdmin):
-   form = PatientDataForm
-   list_display = ('patientID', 'patientName', 'patientBirthDate', 'patientGender') 
+class RecordDetail(admin.ModelAdmin):
+   form = RecordDataForm
+   list_display = ('recordID', 'recordNum', 'recordDate', 'institutionName') 
 
-admin.site.register(PatientData, PatientDetail)
+admin.site.register(RecordData, RecordDetail)
 
-class PatientDetailView(DetailView):
-    template_name = "patient_with_image.html"
-    model = PatientData
+class RecordDetailView(DetailView):
+    template_name = "record_with_image.html"
+    model = RecordData
 
     def get_context_data(self, **kwargs):
         
-        patient = self.get_object()  # Retrieves the PatientDataModel instance for the patient
+        record = self.get_object()  # Retrieves the RecordDataModel instance for the record
 
-        # Retrieve all uploaded files for this patient
-        uploaded_files = UploadedFile.objects.filter(patientName=patient)
+        # Retrieve all uploaded files for this record
+        uploaded_files = UploadedFile.objects.filter(recordNum=record)
 
         # Check if each uploaded file has a corresponding CroppedImage
         predicted_files = [
@@ -186,9 +186,9 @@ class MultipleFileField(forms.FileField):
             result = single_file_clean(data, initial)
         return result
 
-class PatientChoiceField(forms.ModelChoiceField):
+class RecordChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return f'{obj.patientID} - {obj.patientName}'
+        return f'{obj.recordID} - {obj.recordNum}'
 
 
 def validate_image_type(value):
@@ -201,11 +201,11 @@ def validate_label_type(value):
         raise ValidationError(_('Silahkan upload label dengan tipe file GEOJSON'))
 
 class UploadFileForm(forms.Form):
-    patientName = PatientChoiceField(
-        queryset= PatientData.objects.all(),
-        empty_label='Pilih Nama Pasien',  # Remove the empty label (optional)
+    recordNum = RecordChoiceField(
+        queryset= RecordData.objects.all(),
+        empty_label='Pilih Nomor Rekam Medis',  # Remove the empty label (optional)
         to_field_name='id',
-        label="Nama Pasien"
+        label="Nomor Rekam Medis"
     )
     
     image = MultipleFileField(validators=[validate_image_type])
@@ -221,10 +221,10 @@ class UploadFileForm(forms.Form):
 
     class Meta:
         model = UploadedFile
-        fields = ['image', 'annotation', 'patientName', 'imageDate']
+        fields = ['image', 'annotation', 'recordNum', 'recordDate']
 
 class UploadedFile_list(admin.ModelAdmin):
-    list_display = ('get_patient_name', 'detail')
+    list_display = ('get_record_num', 'detail')
     list_display_links = None
     
     def has_add_permission(self, request):
@@ -239,7 +239,7 @@ class UploadedFile_list(admin.ModelAdmin):
         custom_urls = [
             # Define your custom URL patterns here
             path('upload-image/', self.upload_image),
-            path('<pk>/detail', self.admin_site.admin_view(PatientDetailView.as_view()), name='patient_detail'),
+            path('<pk>/detail', self.admin_site.admin_view(RecordDetailView.as_view()), name='record_detail'),
         ]
 
         return custom_urls + urls
@@ -250,21 +250,21 @@ class UploadedFile_list(admin.ModelAdmin):
         unique_entries = {}
         # Iterate through the queryset and store unique entries in the dictionary
         for file in files:
-            key = file.patientName_id  # Use the field you want to check for uniqueness
+            key = file.recordNum_id  # Use the field you want to check for uniqueness
             if key not in unique_entries:
                 unique_entries[key] = file
 
         if request.method == 'POST':
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
-                selected_patient = form.cleaned_data['patientName']
-                selected_patient_id = selected_patient.id
+                selected_record = form.cleaned_data['recordNum']
+                selected_record_id = selected_record.id
                 selected_tanggaldiambil = form.cleaned_data['imageDate']
                 images = request.FILES.getlist('image')
                 annotations = request.FILES.getlist('annotation')
                 for image_file, annotation_file in zip(images, annotations):                  
                     UploadedFile.objects.create(
-                        image=image_file, annotation=annotation_file, patientName_id=selected_patient_id, imageDate=selected_tanggaldiambil
+                        image=image_file, annotation=annotation_file, recordNum_id=selected_record_id, imageDate=selected_tanggaldiambil
                     )
                 return redirect('../')
         else:
@@ -274,31 +274,31 @@ class UploadedFile_list(admin.ModelAdmin):
         
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        # Create a dictionary to store the latest record for each unique patient
+        # Create a dictionary to store the latest record for each unique record
         latest_records = {}
         
         for file in queryset:
-            patient_id = file.patientName.id
-            if patient_id not in latest_records:
-                latest_records[patient_id] = file
+            record_id = file.recordNum.id
+            if record_id not in latest_records:
+                latest_records[record_id] = file
             else:
                 # Check if this record has a more recent uploaded_at date
-                if file.uploaded_at > latest_records[patient_id].uploaded_at:
-                    latest_records[patient_id] = file
+                if file.uploaded_at > latest_records[record_id].uploaded_at:
+                    latest_records[record_id] = file
         
         # Convert the dictionary values back to a queryset
         return UploadedFile.objects.filter(pk__in=[record.id for record in latest_records.values()])
 
-    def get_patient_name(self, obj):
-   		return obj.patientName.patientName  # Replace 'name' with the actual field name in your Patient model
+    def get_record_num(self, obj):
+   		return obj.recordNum.recordNum  # Replace 'name' with the actual field name in your Record model
     
-    get_patient_name.short_description = 'Patient Name'  # This sets the column header text in the admin list view
+    get_record_num.short_description = 'Record Num'  # This sets the column header text in the admin list view
 
 
 
-    def detail(self, obj: PatientData) -> str:
-        foreign_key_value = obj.patientName_id
-        url = reverse("admin:patient_detail", args=[foreign_key_value])
+    def detail(self, obj: RecordData) -> str:
+        foreign_key_value = obj.recordNum_id
+        url = reverse("admin:record_detail", args=[foreign_key_value])
         return format_html(f'<a href="{url}">📝</a>')
 
 admin.site.register(UploadedFile, UploadedFile_list)

@@ -15,18 +15,18 @@
 	{% for file in file_to_delete %}
 	<tr>
 		<td>
-			Name Pasien
+			Nomor Rekam Medis
 		</td>
 		<td>
-			: {{ file.patient_data.patientName }} 
+			: {{ file.record_data.recordNum }} 
 		</td>
 	</tr>
 	<tr>
 		<td>
-			No Pasien
+			Record ID
 		</td>
 		<td>
-			: {{ file.patient_data.patientID }}
+			: {{ file.record_data.recordID }}
 			
 		</td>
 	</tr>

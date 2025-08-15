@@ -65,34 +65,34 @@
 <table>
 	<tr>
 		<td>
-			Name Pasien
+			Nomor Rekam Medis
 		</td>
 		<td>
-			: {{ data_to_print.patient_data.patientName }} 
-		</td>
-	</tr>
-	<tr>
-		<td>
-			No Pasien
-		</td>
-		<td>
-			: {{ data_to_print.patient_data.patientID }}
+			: {{ data_to_print.record_data.recordNum }} 
 		</td>
 	</tr>
 	<tr>
 		<td>
-			Tanggal Lahir
+			No Record
 		</td>
 		<td>
-			: {{ data_to_print.patient_data.patientBirthDate }}
+			: {{ data_to_print.record_data.recordID }}
 		</td>
 	</tr>
 	<tr>
 		<td>
-			Jenis Kelamin
+			Tanggal Pengambilan Data
 		</td>
 		<td>
-			: {{ data_to_print.patient_data.get_patientGender_display }}
+			: {{ data_to_print.record_data.recordDate }}
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Institusi
+		</td>
+		<td>
+			: {{ data_to_print.record_data.institutionName }}
 		</td>
 	</tr>
 	<tr>

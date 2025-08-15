@@ -1,25 +1,21 @@
 from django.db import models
 
 # Create your models here.
-class PatientData(models.Model):
-	GENDER_CHOICES = ( 
-		('L', 'Laki-laki'), 
-		('P', 'Perempuan'), 
-	)
+class RecordData(models.Model):
 
-	patientName = models.CharField('Nama Pasien', max_length = 225)
-	patientBirthDate = models.DateField('Tanggal Lahir', auto_now_add=False, auto_now=False)
-	patientGender = models.CharField('Jenis Kelamin', max_length = 1, choices=GENDER_CHOICES, default='L')
-	patientID = models.CharField('No Pasien', max_length = 16, unique=True, default=None)
+	recordNum = models.CharField('Nomor Rekam Medis', max_length = 225, default='UNKNOWN')
+	institutionName = models.CharField('Institusi', max_length = 225)
+	recordDate = models.DateField('Tanggal pengambilan', auto_now_add=False, auto_now=False)
+	recordID = models.CharField('Record ID', max_length = 16, unique=True, default=None)
 
 	def __str__(self):
-		return self.patientName
+		return self.recordNum
 
 	class Meta:
-		verbose_name_plural = 'Patient Data'  # Change the display name here
+		verbose_name_plural = 'Medical Records'  # Change the display name here
 
 class UploadedFile(models.Model):
-    patientName = models.ForeignKey(PatientData, on_delete=models.CASCADE)
+    recordNum = models.ForeignKey(RecordData, on_delete=models.CASCADE)
     image = models.FileField(upload_to='uploads/')
     annotation = models.FileField(upload_to='uploads/')
     annotated_image = models.FileField(upload_to='static/')
@@ -29,8 +25,8 @@ class UploadedFile(models.Model):
     def __str__(self):
         return f"{self.image}"
     
-    def patient_data(self):
-        return self.patientName
+    def record_data(self):
+        return self.recordNum
 	
 class CroppedImage(models.Model):
 	rawImage = models.ForeignKey(UploadedFile, on_delete=models.CASCADE)

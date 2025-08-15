@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import UploadedFile, PatientData as PatientDataModel, CroppedImage
+from .models import UploadedFile, CroppedImage
 from django.http import HttpResponse
 from django.urls import reverse 
 from django.contrib import messages
@@ -36,7 +36,7 @@ def delete_uploaded_view(request, item_id):
 			file = get_object_or_404(UploadedFile, id=selected_file)
 			file.delete()
 			messages.success(request, 'Data Berhasil dihapus')
-			return redirect('../admin/hibahs/uploadedfile/')
+			return redirect('../admin/records/uploadedfile/')
 		else:
 			messages.error(request, 'Password salah')
 			return render(request, "delete_image.html", {'password_error': True, 'file_to_delete': file_to_delete})
@@ -68,7 +68,7 @@ def delete_prediction_view(request, item_id):
 			file = get_object_or_404(CroppedImage, id=selected_file)
 			file.delete()
 			messages.success(request, 'Data Berhasil dihapus')
-			return redirect('../admin/hibahs/uploadedfile/')
+			return redirect('../admin/records/uploadedfile/')
 		else:
 			messages.error(request, 'Password salah')
 			return render(request, "delete_prediction.html", {'password_error': True, 'file_to_delete': file_to_delete})

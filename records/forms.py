@@ -1,5 +1,5 @@
 from django import forms
-from .models import UploadedFile, PatientData
+from .models import UploadedFile, RecordData
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -20,18 +20,18 @@ class MultipleFileField(forms.FileField):
         return result
 
 
-class PatientChoiceField(forms.ModelChoiceField):
+class RecordChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return f'{obj.patientNationalID} - {obj.patientName}'
+        return f'{obj.institutionName} - {obj.recordNum}'
 
 def validate_file_type(value):
     if not value.name.lower().endswith(('.png', '.jpg', '.jpeg')):
         raise ValidationError(_('File type is not supported. Only PNG and JPEG are allowed.'))
 
 class UploadFileForm(forms.ModelForm):
-    patientName = PatientChoiceField(
-        queryset= PatientData.objects.all(),
-        empty_label='Pilih Nama Pasien',  # Remove the empty label (optional)
+    recordNum = RecordChoiceField(
+        queryset= RecordData.objects.all(),
+        empty_label='Pilih Nomor Rekam Medis',  # Remove the empty label (optional)
         to_field_name='id'
     )
     
@@ -40,7 +40,7 @@ class UploadFileForm(forms.ModelForm):
 
     class Meta:
         model = UploadedFile
-        fields = ['image', 'annotation', 'patientName', 'imageDate']
+        fields = ['image', 'annotation', 'recordNum', 'imageDate']
 
     imageDate = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date'}),
@@ -53,15 +53,11 @@ class UploadFileForm(forms.ModelForm):
 
 class PatientData(forms.ModelForm):
     class Meta:
-        model = PatientData
-
-        widgets = {
-            'patientGender': forms.RadioSelect(),
-        }
+        model = RecordData
 
         fields = [
-            "patientNationalID",
-            "patientName",
-            "patientGender",
-            "patientBirthDate"
+            "recordID"
+            "recordNum",
+            "institutionName",
+            "recordDate",
         ]
