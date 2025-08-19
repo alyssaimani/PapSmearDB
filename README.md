@@ -17,7 +17,7 @@
 
    ```pip install -r requirements.txt```
 
-   ```pip install msqlclient```
+   ```pip install mysqlclient```
 
 ## Deployment Instructions
 
