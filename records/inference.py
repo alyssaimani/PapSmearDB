@@ -11,7 +11,8 @@ import numpy as np
 from skimage.segmentation import mark_boundaries
 
 from tqdm.auto import tqdm
-
+from django.conf import settings
+import os
 from os import listdir
 from os.path import join
 import geojson
@@ -187,7 +188,7 @@ def draw_bounding_box_pil(img_file, geojson_file, show=False, out_file=None):
 
 if __name__ == "__main__":
     # load model
-    MODEL_PATH = "media/best_model_multitask_part_4.pt"
+    MODEL_PATH = os.path.join(settings.MEDIA_ROOT, 'best_model_multitask_part_4.pt')
     model = DinoModelWrapper(device=device)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
     model.to(device)
