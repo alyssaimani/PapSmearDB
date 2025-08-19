@@ -1,7 +1,7 @@
 ## Setup Rquirements
-1. install python 3.10 and pip
+1. install python 3.11 and pip
    
-   ```sudo dnf install python-3 python3-pip```
+   ```sudo dnf install python-3.11 python3.11-pip```
    
 2. Create virtual environment
 
@@ -17,7 +17,7 @@
 
    ```pip install -r requirements.txt```
 
-   ```pip install msqlclient```
+   ```pip install mysqlclient```
 
 ## Deployment Instructions
 
