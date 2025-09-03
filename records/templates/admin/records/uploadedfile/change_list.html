@@ -3,7 +3,10 @@
 {% load static %}
 {% block content %}
 
-<a href="upload-image/" class="addlink">Upload image</a>
+<ul style="display: flex; justify-content: space-between;">
+    <a href="upload-image/" class="addlink">Upload image</a>
+    <a href="{{ summary_url }}">📊 Summary </a>
+</ul>
 
 {{ block.super }}
 {% endblock %}

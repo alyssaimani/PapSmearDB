@@ -10,6 +10,8 @@ from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse, path
+from django.db.models import Count
+from django.utils.safestring import mark_safe
 
 from .inference import get_cropped_images, batch_predict, DinoModelWrapper, get_preprocess_transform, draw_bounding_box_pil
 from skimage.segmentation import mark_boundaries
@@ -153,20 +155,20 @@ class RecordDetailView(DetailView):
                         file_object.save()
                         
                         # crop raw image
-                        cropped_images = get_cropped_images(path_image, path_annotation)
+                        cropped_images, cropped_labels = get_cropped_images(path_image, path_annotation)
                         
                         # predict cropped images
                         _, pred_labels = batch_predict(model, cropped_images, transform=get_preprocess_transform())
                         
 
                         # save cropped images into storage
-                        for idx,image in enumerate(cropped_images):
+                        for idx, (image,label) in enumerate(zip(cropped_images, cropped_labels)):
                             filename = f"cropped_{file.id}_{idx}.jpg"
                             save_path = os.path.join('media/static', filename)
                             image.save(save_path)
                         
                             # save to database
-                            CroppedImage.objects.create(rawImage_id=file.id, image=filename, predictionResult=label_task_1[pred_labels[idx]], predictionDate=datetime.now())
+                            CroppedImage.objects.create(rawImage_id=file.id, image=filename, originalLabel=label, predictionResult=label_task_1[pred_labels[idx]], predictionDate=datetime.now())
                     
                     return redirect(request.get_full_path())
 
@@ -229,6 +231,12 @@ class UploadFileForm(forms.Form):
 class UploadedFile_list(admin.ModelAdmin):
     list_display = ('get_record_num', 'detail')
     list_display_links = None
+
+    def changelist_view(self, request, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+        extra_context["summary_url"] = reverse("admin:records-summary")
+        return super().changelist_view(request, extra_context=extra_context)
     
     def has_add_permission(self, request):
         return False
@@ -242,6 +250,7 @@ class UploadedFile_list(admin.ModelAdmin):
         custom_urls = [
             # Define your custom URL patterns here
             path('upload-image/', self.upload_image),
+            path("summary/", self.admin_site.admin_view(self.summary_view), name="records-summary"),
             path('<pk>/detail', self.admin_site.admin_view(RecordDetailView.as_view()), name='record_detail'),
         ]
 
@@ -297,6 +306,24 @@ class UploadedFile_list(admin.ModelAdmin):
     
     get_record_num.short_description = 'Record Num'  # This sets the column header text in the admin list view
 
+    def summary_view(self, request):
+        total_uploaded = UploadedFile.objects.count()
+        total_cropped = CroppedImage.objects.count()
+        class_counts = (
+            CroppedImage.objects.values("originalLabel")
+            .annotate(count=Count("id"))
+            .order_by("originalLabel")
+        )
+
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Records Summary",
+            "total_uploaded": total_uploaded,
+            "total_cropped": total_cropped,
+            "class_counts": class_counts,
+        }
+
+        return render(request, "records_summary.html", context)
 
 
     def detail(self, obj: RecordData) -> str:

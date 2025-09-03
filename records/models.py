@@ -5,8 +5,8 @@ class RecordData(models.Model):
 
 	recordNum = models.CharField('Nomor Rekam Medis', max_length = 225, default='UNKNOWN')
 	institutionName = models.CharField('Institusi', max_length = 225)
-	recordDate = models.DateField('Tanggal pengambilan', auto_now_add=False, auto_now=False)
-	project = models.FileField(upload_to='uploads/')
+	recordDate = models.DateField('Tanggal Pengambilan', auto_now_add=False, auto_now=False)
+	project = models.FileField('Qupath Project', upload_to='uploads/')
 	recordID = models.CharField('Record ID', max_length = 16, unique=True, default=None)
 
 	def __str__(self):
@@ -32,6 +32,7 @@ class UploadedFile(models.Model):
 class CroppedImage(models.Model):
 	rawImage = models.ForeignKey(UploadedFile, on_delete=models.CASCADE)
 	image = models.FileField(upload_to='static/')
+	originalLabel = models.TextField(null=True, blank=True)
 	predictionResult = models.TextField(null=True, blank=True)
 	predictionDate = models.DateField('Tanggal Image diprediksi (mm/dd/yyyy)', auto_now_add=False, auto_now=False)
 	uploaded_at = models.DateTimeField(auto_now_add=True)

@@ -115,7 +115,7 @@ def batch_explanation(images):
 
 def get_cropped_images(img_file, geojson_file):
     cropped_images = []
-
+    cropped_labels = []
     img = np.asarray(get_image(img_file))
     with open(geojson_file) as f:
         gj = geojson.load(f)
@@ -147,8 +147,9 @@ def get_cropped_images(img_file, geojson_file):
 
         # convert numpy array to PIL image for further preprocessing
         cropped_images.append(Image.fromarray(cropped_image.astype('uint8'), 'RGB'))
+        cropped_labels.append(label)
     
-    return cropped_images
+    return cropped_images, cropped_labels
 
 
 def get_bbox_corners(geojson_file):
@@ -214,8 +215,8 @@ if __name__ == "__main__":
     geojson_file = img_file.replace('.jpg', '.geojson')
 
     # cropping a full image into ROIs based on bounding box annotations in geojson file
-    # cropped_images = get_cropped_images(img_file, geojson_file)
-    # print(cropped_images)
+    # cropped_images, cropped_labels = get_cropped_images(img_file, geojson_file)
+    # print(cropped_labels)
 
     # # needs resizing to 224x224, available in get_preprocess_transform()
     # _, pred_labels = batch_predict(model, cropped_images, transform=get_preprocess_transform())
