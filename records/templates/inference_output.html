@@ -34,7 +34,7 @@
                     <img src="/media/static/{{ data.image }}" width="224" height="224">
                 </td>
                 <td>
-                    <p>Model mendiagnosis bahwa gambar yang diupload terindikasi {{ data.predictionResult }}</p>
+                    <p>Model memprediksi gambar sel berikut diklasifikasi sebagai {{ data.predictionResult }}</p>
                 </td>
                 <td>
                     <a href="{% url 'delete_prediction_view' data.id %}" class="button" name="action" value="delete" style="background-color: #ba2121; color: white;">Hapus</a>

@@ -41,9 +41,9 @@ class RecordDataForm(forms.ModelForm):
             if latest_record:
                 numeric_part = int(latest_record.recordID[3:])
                 next_numeric_part = numeric_part + 1
-                self.initial['recordID'] = f'PAS{next_numeric_part:03}'
+                self.initial['recordID'] = f'REC{next_numeric_part:03}'
             else:
-                self.initial['recordID'] = 'PAS001'
+                self.initial['recordID'] = 'REC001'
 
     recordNum = forms.CharField(
         validators=[RegexValidator(regex=r'^[a-zA-Z0-9\s]*$', message='Enter only alphanumeric characters.')],
