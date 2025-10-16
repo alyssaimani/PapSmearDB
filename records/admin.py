@@ -12,6 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse, path
 from django.db.models import Count
 from django.utils.safestring import mark_safe
+from django.db.models import Max, Min
 
 from .inference import get_cropped_images, batch_predict, DinoModelWrapper, get_preprocess_transform, draw_bounding_box_pil
 from skimage.segmentation import mark_boundaries
@@ -309,18 +310,57 @@ class UploadedFile_list(admin.ModelAdmin):
     def summary_view(self, request):
         total_uploaded = UploadedFile.objects.count()
         total_cropped = CroppedImage.objects.count()
+        institutions = RecordData.objects.values_list('institutionName', flat=True).distinct()
         class_counts = (
             CroppedImage.objects.values("originalLabel")
             .annotate(count=Count("id"))
             .order_by("originalLabel")
         )
-
+        period_range = UploadedFile.objects.aggregate(
+            min_date=Min('imageDate'),
+            max_date=Max('imageDate')
+        )
+        min_date = period_range['min_date']
+        max_date = period_range['max_date']
+        
+        # for selected year
+        years = []
+        if min_date and max_date:
+            years = list(range(min_date.year, max_date.year + 1))
+        print(min_date.year)
+        selected_year = request.GET.get("year")
+        if selected_year:
+            selected_year = int(selected_year)
+        else:
+            selected_year = max_date.year
+        
+        yearly_uploaded = UploadedFile.objects.filter(imageDate__year=selected_year).count()
+        yearly_cropped =  CroppedImage.objects.filter(rawImage__imageDate__year=selected_year).count()
+        yearly_institutions = (
+                                RecordData.objects
+                                .filter(uploadedfile__imageDate__year=selected_year)
+                                .values_list('institutionName', flat=True)
+                                .distinct()
+                            )
+        yearly_class_counts = (
+                                CroppedImage.objects.filter(rawImage__imageDate__year=selected_year)
+                                .values("originalLabel")
+                                .annotate(count=Count("id"))
+                                .order_by("originalLabel")
+                            )
         context = {
             **self.admin_site.each_context(request),
             "title": "Records Summary",
+            "years": years,
             "total_uploaded": total_uploaded,
             "total_cropped": total_cropped,
+            "institutions": institutions,
             "class_counts": class_counts,
+            "yearly_uploaded": yearly_uploaded,
+            "yearly_cropped": yearly_cropped,
+            "yearly_institutions": yearly_institutions,
+            "yearly_class_counts": yearly_class_counts,
+            "selected_year": selected_year
         }
 
         return render(request, "records_summary.html", context)

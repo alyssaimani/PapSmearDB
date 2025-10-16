@@ -1,54 +1,177 @@
 {% extends "admin/base_site.html" %}
-
 {% block content %}
-<p><strong>Total Uploaded Files:</strong> {{ total_uploaded }}</p>
-<p><strong>Total Cropped Images:</strong> {{ total_cropped }}</p>
-
-<h2>Class Distribution</h2>
-<div style="display: flex; justify-content: center; align-items: center; height: 400px; width: 100%;">
-    <canvas id="classChart" width="200" height="200"></canvas>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const labels = [
-        {% for row in class_counts %}
-    "{{ row.originalLabel|default:'Unlabeled' }}"{% if not forloop.last %}, {% endif %}
-    {% endfor %}
-    ];
-
-    const data = {
-        labels: labels,
-        datasets: [{
-            label: 'Number of Class',
-            data: [
-                {% for row in class_counts %}
-                    {{ row.count }}{% if not forloop.last %}, {% endif %}
-    {% endfor %}
-            ],
-    backgroundColor: 'rgba(10, 50, 110, 0.6)',
-        borderColor: 'rgba(10, 50, 110, 1)',
-            borderWidth: 1
-        }]
-    };
-
-    const config = {
-        type: 'bar',
-        data: data,
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { precision: 0 }
-                }
-            }
+<head>
+    <style>
+        .wrapper-dashboard {
+            display: flex; flex-direction: row; justify-content: center; column-gap: 10%;
         }
-    };
+        .box-dashboard {
+            display: flex; flex-direction: column; justify-content: center; text-align: center;
+        }
+        .grid-data {
+            display: grid; grid-template-columns: auto auto auto; gap: 2vh; border-radius: 5px; padding: 2%;
+        }
+        .grid-box {
+            background-color: #EEEBDD; border-radius: 2%; padding: 1%;
+        }
+        form {
+            margin-bottom: 1em;
+        }
+        .chart-canvas {
+            display: flex; justify-content: center; align-items: center; height: 400px; width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <form method="get">
+        <label for="year-select"><strong>Select Year:</strong></label>
+        <select id="year-select" name="year" onchange="this.form.submit()">
+            <option value="">All Years</option>
+            {% for y in years %}
+            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
+                {{ y }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+    <div class="wrapper-dashboard">
+        <div class="box-dashboard">
+            <h2>Overall Data Summary (All Year)</h2>
+            <div class="grid-data">
+                <div class="grid-box">
+                    <h3>Medical Records</h3>
+                    <p>{{ total_uploaded }}</p>
+                </div>
+                <div class="grid-box">
+                    <h3>Annotated Cells</h3>
+                    <p>{{ total_cropped }}</p>
+                </div>
+                <div class="grid-box">
+                    <h3>Number of Institutions</h3>
+                    <p>{{ institutions.count }}</p>
+                </div>
+                <div class="grid-box">
+                    <h3>Class Cells</h3>
+                    <p>{{ class_counts.count }}</p>
+                </div>
+                <div class="grid-box">
+                    <h3>Period</h3>
+                    <p>{{ years|length }} years</p>
+                </div>
+                <div class="grid-box">
+                    <h3>Institutions</h3>
+                    {% for inst in institutions %}
+                    <p>{{ inst }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <h2>Class Distribution of Annotated Cells</h2>
+            <div class="chart-canvas">
+                <canvas id="total-chart" height="400"></canvas>
+            </div>
+        </div>
+        <div class="box-dashboard">
+            <div class="box-dashboard">
+                <h2>Yearly Data Summary ({{ selected_year }})</h2>
+                <div class="grid-data">
+                    <div class="grid-box">
+                        <h3>Medical Records</h3>
+                        <p>{{ yearly_uploaded }}</p>
+                    </div>
+                    <div class="grid-box">
+                        <h3>Annotated Cells</h3>
+                        <p>{{ yearly_cropped }}</p>
+                    </div>
+                    <div class="grid-box">
+                        <h3>Number of Institutions</h3>
+                        <p>{{ yearly_institutions.count }}</p>
+                    </div>
+                    <div class="grid-box">
+                        <h3>Class Cells</h3>
+                        <p>{{ yearly_class_counts.count }}</p>
+                    </div>
+                    <div class="grid-box">
+                        <h3>Period</h3>
+                        <p>12 Months</p>
+                    </div>
+                    <div class="grid-box">
+                        <h3>Institutions</h3>
+                        {% for inst in yearly_institutions %}
+                        <p>{{ inst }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            <h2>Class Distribution of Annotated Cells</h2>
+            <div class="chart-canvas">
+                <canvas id="yearly-chart" height="400"></canvas>
+            </div>
+    
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Generate label arrays
+        const labelsTotal = [
+            {% for row in class_counts %}
+        "{{ row.originalLabel|default:'Unlabeled' }}"{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        ];
 
-    const classChart = new Chart(
-        document.getElementById('classChart'),
-        config
-    );
-</script>
+        const labelsYearly = [
+            {% for row in yearly_class_counts %}
+        "{{ row.originalLabel|default:'Unlabeled' }}"{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        ];
+
+        // Generate data arrays
+        const countsTotal = [
+            {% for row in class_counts %}
+        {{ row.count }} {% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        ];
+
+        const countsYearly = [
+            {% for row in yearly_class_counts %}
+        {{ row.count }} {% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        ];
+
+        // Reusable chart config generator
+        function createBarChartConfig(labels, data, labelText) {
+            return {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: labelText,
+                        data,
+                        backgroundColor: 'rgba(10, 50, 110, 0.6)',
+                        borderColor: 'rgba(10, 50, 110, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            };
+        }
+
+        // Initialize charts
+        const totalChart = new Chart(
+            document.getElementById('total-chart'),
+            createBarChartConfig(labelsTotal, countsTotal, 'Number of Annotated Cells')
+        );
+
+        const yearlyChart = new Chart(
+            document.getElementById('yearly-chart'),
+            createBarChartConfig(labelsYearly, countsYearly, 'Number of Annotated Cells')
+        );
+    </script>
+</body>
 {% endblock %}
