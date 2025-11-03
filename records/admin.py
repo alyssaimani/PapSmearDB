@@ -26,8 +26,6 @@ class RecordUpload(admin.StackedInline):
     model = UploadedFile
 
 class RecordDataForm(forms.ModelForm):
-    current_date = datetime.now().date()
-
     class Meta:
         model = RecordData
         fields = '__all__'
@@ -35,6 +33,7 @@ class RecordDataForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['recordID'].disabled = True
+        self.fields['recordDate'].widget.attrs['max'] = str(datetime.now().date())
 
         # If the instance is not provided (i.e., when creating a new record), generate no_record
         if not self.instance.pk:
@@ -52,7 +51,7 @@ class RecordDataForm(forms.ModelForm):
     )
 
     recordDate = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'max': str(current_date)}),
+        widget=forms.DateInput(attrs={'type': 'date'}),
         label='Tanggal Pengambilan Data',
     )
 
@@ -218,13 +217,15 @@ class UploadFileForm(forms.Form):
     
     annotation = MultipleFileField(validators=[validate_label_type])
 
-    current_date = datetime.now().date()
-
     imageDate = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'max': str(current_date)}),
+        widget=forms.DateInput(attrs={'type': 'date'}),
         label='Tanggal Diambil',
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['imageDate'].widget.attrs['max'] = str(datetime.now().date())
+        
     class Meta:
         model = UploadedFile
         fields = ['image', 'annotation', 'recordNum', 'recordDate', 'project']
