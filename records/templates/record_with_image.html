@@ -75,7 +75,7 @@
         <table width="100%">
             <thead>
                 <tr>
-                    <th></th>
+                    <th><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)" /></th>
                     <th>Gambar Asli</th>
                     <th>Tanggal Gambar diambil</th>
                     <th colspan="3"></th>
@@ -86,21 +86,11 @@
                 <tr>
                     {% if item in predicted_files %}
                     <td>
-                        <input
-                            type="checkbox"
-                            name="selected_files"
-                            value="{{ item.id }}"
-                            disabled
-                        />
+                        <input type="checkbox" name="selected_files" value="{{ item.id }}" disabled />
                     </td>
-                    {% elif not item.diagnosisResult %}
+                    {% else %}
                     <td>
-                        <input
-                            type="checkbox"
-                            name="selected_files"
-                            value="{{ item.id }}"
-                            enabled
-                        />
+                        <input type="checkbox" name="selected_files" value="{{ item.id }}" />
                     </td>
                     {% endif %}
 
@@ -156,5 +146,10 @@
         modal.style.display = "block";
         // You can add more loading logic here if needed
     }
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('input[name="selected_files"]:not(:disabled)');
+        checkboxes.forEach(checkbox => {checkbox.checked = source.checked});
+}
+
 </script>
 {% endblock %}

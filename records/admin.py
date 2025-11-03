@@ -13,6 +13,7 @@ from django.urls import reverse, path
 from django.db.models import Count
 from django.utils.safestring import mark_safe
 from django.db.models import Max, Min
+from django.db.models.functions import ExtractMonth
 
 from .inference import get_cropped_images, batch_predict, DinoModelWrapper, get_preprocess_transform, draw_bounding_box_pil
 from skimage.segmentation import mark_boundaries
@@ -349,10 +350,19 @@ class UploadedFile_list(admin.ModelAdmin):
                                 .annotate(count=Count("id"))
                                 .order_by("originalLabel")
                             )
+        months = (
+                    UploadedFile.objects
+                    .filter(imageDate__year=selected_year)
+                    .annotate(month=ExtractMonth('imageDate'))
+                    .values_list('month', flat=True)
+                    .distinct()
+                    .order_by('month')
+                )
         context = {
             **self.admin_site.each_context(request),
             "title": "Records Summary",
             "years": years,
+            "months": months,
             "total_uploaded": total_uploaded,
             "total_cropped": total_cropped,
             "institutions": institutions,
